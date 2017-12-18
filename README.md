@@ -1,4 +1,4 @@
 ## Hash Map Impl
 
-Back to some old school c++ fun!
-trying to implement a growing hashmap (WIP)
+Back to some c++ fun!
+Implementing a simple growing hashmap (WIP)
