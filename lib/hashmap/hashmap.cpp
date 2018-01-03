@@ -8,32 +8,9 @@
 HashEntry::HashEntry(char* aKey, int aValue)
 {
   myKey = aKey;
+  myHashedKey = -1;
   myValue = aValue;
-  myKeyIndex = 0;
-}
-
-HashEntry::~HashEntry()
-{
-}
-
-char* HashEntry::getKey()
-{
-  return &myKey[0];
-}
-
-int HashEntry::getValue()
-{
-  return myValue;
-}
-
-void HashEntry::setKeyIndex(int aKeyIndex)
-{
-  myKeyIndex = aKeyIndex;
-}
-
-int HashEntry::getKeyIndex()
-{
-  return myKeyIndex;
+  myNextItem = NULL;
 }
 
 //GrowingHashMap
@@ -56,34 +33,61 @@ GrowingHashMap::GrowingHashMap(int size)
 GrowingHashMap::~GrowingHashMap()
 {
   for(int index = 0; index < mySize; index++) {
-    delete myEntries[index];
+    HashEntry* current = myEntries[index];
+    if (current != NULL) {
+      do {
+        HashEntry* next = current->myNextItem;
+        delete current;
+        current = next;
+      } while(current != NULL);
+      myEntries[index] = NULL;
+    }
   }
   delete myEntries;
+  myEntries = NULL;
 }
 
 void GrowingHashMap::put(char* aKey, int aValue)
 {
   if(myNumEntries >= mySize) growByPowerOfTwo();
-  HashEntry* newEntry = new HashEntry(aKey, aValue);
-  insert(newEntry);
+  insert(new HashEntry(aKey, aValue));
+}
+
+int GrowingHashMap::get(char* aKey)
+{
+  HashEntry* entry = myEntries[hash(aKey)];
+  while(entry && entry->myKey != aKey) {
+    entry = entry->myNextItem;
+  }
+  if(entry != NULL) {
+    return entry->myValue;
+  }
+  printf("Warning: Accessed hashmap with non-existing key...\n");
+  return 0;
 }
 
 //Insert by order of generated key
 void GrowingHashMap::insert(HashEntry* aNewEntry)
 {
-  unsigned int hashedKey = hash(aNewEntry->getKey());
+  unsigned int hashedKey = hash(&aNewEntry->myKey[0]);
+  // printf("-- inserting Entry: %i with key: %i -- my size: %i \n",aNewEntry->myValue, hashedKey, mySize);
   if(myEntries[hashedKey] != NULL) {
     insertCollided(aNewEntry, myEntries[hashedKey]);
   } else {
     myEntries[hashedKey] = aNewEntry;
-    myNumEntries++;
   }
+  aNewEntry->myHashedKey = hashedKey;
+  myNumEntries++;
 }
 
-void GrowingHashMap::insertCollided(HashEntry* anEntry, HashEntry* anExistingEntry)
+void GrowingHashMap::insertCollided(HashEntry* aNewEntry, HashEntry* anExistingEntry)
 {
-  printf("insertCollided() - not implemented yet, skipping insertion...\n");
-  // TODO
+  // printf("-- insertCollided -- \n");
+  HashEntry* current = anExistingEntry;
+  while(current->myNextItem != NULL) {
+    current = current->myNextItem;
+  }
+  current->myNextItem = aNewEntry;
 }
 
 unsigned int GrowingHashMap::hash(char* aKey)
@@ -115,7 +119,6 @@ unsigned int GrowingHashMap::DJBHash(const char* str, unsigned int length)
 unsigned int GrowingHashMap::JSHash(const char* str, unsigned int length)
 {
   unsigned int hash = 1315423911;
-  // unsigned int hash = 1315423911;
   unsigned int i    = 0;
 
   for (i = 0; i < length; ++str, ++i)
@@ -131,29 +134,64 @@ void GrowingHashMap::growByPowerOfTwo()
   int oldSize = mySize;
   mySize = mySize * mySize;
 
-  HashEntry** newEntries = new HashEntry*[mySize];
+  HashEntry** oldEntries = myEntries;
+  delete myEntries;
+  myEntries = new HashEntry*[mySize];
   for(int index = 0; index < mySize; index++) {
-    if (index < oldSize) {
-      newEntries[index] = myEntries[index];
-    } else {
-      newEntries[index] = NULL;
+    myEntries[index] = NULL;
+  }
+  myNumEntries = 0;
+  rehash(oldEntries, oldSize);
+}
+
+void GrowingHashMap::rehash(HashEntry** oldEntries, int oldSize)
+{
+  for(int index = 0; index < oldSize; index++) {
+    if(oldEntries[index] != NULL) {
+      HashEntry* current = oldEntries[index];
+      do {
+        HashEntry* next = current->myNextItem;
+        current->myNextItem = NULL;
+        insert(current);
+        current = next;
+      } while (current != NULL);
     }
   }
+}
 
-  delete myEntries;
-  myEntries = newEntries;
+void GrowingHashMap::printEntries(HashEntry** someEntries, int size)
+{
+  for(int index = 0; index < size; index++) {
+    if(someEntries[index] != NULL) {
+      printf("\nEntry: %i", index);
+      HashEntry* cur = someEntries[index];
+      do {
+        printf(" [Value: %i]", cur->myValue);
+        cur = cur->myNextItem;
+      } while(cur != NULL);
+    } else {
+      printf("\nEntry: %i NULL", index);
+    }
+  }
+  printf("\n");
 }
 
 void GrowingHashMap::printEntries()
 {
   for(int index = 0; index < mySize; index++) {
     if(myEntries[index] != NULL) {
-      printf("hash entry index: %i value: %i\n", index, myEntries[index]->getValue());
+      printf("\nEntry: %i", index);
+      HashEntry* cur = myEntries[index];
+      do {
+        printf(" [Value: %i]", cur->myValue);
+        cur = cur->myNextItem;
+      } while(cur != NULL);
     } else {
-      printf("hash entry index: %i NULL\n", index);
+      printf("\nEntry: %i NULL", index);
     }
   }
 
+  printf("\n");
   printf("mySize: %i\n", mySize);
   printf("myNumEntries: %i\n", myNumEntries);
 }

@@ -50,20 +50,77 @@ void testPut()
 {
   GrowingHashMap* hashmap = new GrowingHashMap(2);
 
-  std::string fool = "fool";
-  hashmap->put(&fool[0], 123);
-  std::string bar = "barsa";
-  hashmap->put(&bar[0], 456);
-  std::string baz = "bazorxz";
-  hashmap->put(&baz[0], 789);
-  std::string foobara = "foobara";
-  hashmap->put(&foobara[0], 158);
-  std::string dsadsad = "foobaradsadas";
-  hashmap->put(&dsadsad[0], 158);
+  hashmap->put(&std::string("fool")[0], 123);
+  hashmap->put(&std::string("barsa")[0], 456);
+  hashmap->put(&std::string("bazorxz")[0], 789);
+  hashmap->put(&std::string("foobara")[0], 158);
+  hashmap->put(&std::string("foobaradsadas")[0], 555);
+  hashmap->put(&std::string("LALALAL")[0], 1337);
+  hashmap->put(&std::string("foobarzorz")[0], 787878);
+  hashmap->put(&std::string("lll")[0], 65);
+  hashmap->put(&std::string("Test")[0], 42);
+  hashmap->put(&std::string("TESTA")[0], 98);
 
   hashmap->printEntries();
 
   delete hashmap;
+}
+
+void testGet() {
+
+  GrowingHashMap* hashmap = new GrowingHashMap(2);
+
+  hashmap->put(&std::string("fool")[0], 123);
+  hashmap->put(&std::string("barsa")[0], 456);
+  hashmap->put(&std::string("bazorxz")[0], 789);
+  hashmap->put(&std::string("foobara")[0], 158);
+  hashmap->put(&std::string("foobaradsadas")[0], 555);
+  hashmap->put(&std::string("LALALAL")[0], 1337);
+  hashmap->put(&std::string("foobarzorz")[0], 787878);
+  hashmap->put(&std::string("lll")[0], 65);
+  hashmap->put(&std::string("Test")[0], 42);
+  hashmap->put(&std::string("TESTA")[0], 98);
+
+  hashmap->printEntries();
+
+  printf("Get: %i\n", hashmap->get(&std::string("fool")[0]));
+  printf("Get: %i\n", hashmap->get(&std::string("barsa")[0]));
+  printf("Get: %i\n", hashmap->get(&std::string("bazorxz")[0]));
+  printf("Get: %i\n", hashmap->get(&std::string("foobara")[0]));
+  printf("Get: %i\n", hashmap->get(&std::string("foobaradsadas")[0]));
+  printf("Get: %i\n", hashmap->get(&std::string("LALALAL")[0]));
+  printf("Get: %i\n", hashmap->get(&std::string("foobarzorz")[0]));
+  printf("Get: %i\n", hashmap->get(&std::string("lll")[0]));
+  printf("Get: %i\n", hashmap->get(&std::string("Test")[0]));
+  printf("Get: %i\n", hashmap->get(&std::string("TESTA")[0]));
+
+  // should log warning
+  printf("Get: %i\n", hashmap->get(&std::string("does not exist")[0]));
+
+  delete hashmap;
+}
+
+void testMany() {
+  while (true) {
+    GrowingHashMap* hashmap = new GrowingHashMap(2);
+
+    hashmap->put(&std::string("fool")[0], 123);
+    hashmap->put(&std::string("barsa")[0], 456);
+    hashmap->put(&std::string("bazorxz")[0], 789);
+    hashmap->put(&std::string("foobara")[0], 158);
+    hashmap->put(&std::string("foobaradsadas")[0], 555);
+    hashmap->put(&std::string("LALALAL")[0], 1337);
+    hashmap->put(&std::string("foobarzorz")[0], 787878);
+    hashmap->put(&std::string("lll")[0], 65);
+    hashmap->put(&std::string("Test")[0], 42);
+    hashmap->put(&std::string("TESTA")[0], 98);
+
+    delete hashmap;
+  }
+}
+
+void testGrowBig() {
+
 }
 
 int main(void) 
@@ -71,12 +128,14 @@ int main(void)
   signal(SIGSEGV, traceHandler);
 
   // testHashfunc();
-  testPut();
+  // testPut();
+  // testMany();
+  testGet();
+  // testGrowBig();
 
   // --- TODO ---
-  // Impl & test collided
-  // Collided deletes linked items
-  //Test insert many
+  // Implement get & remove
+  // Determine when it whould grow
 
   return 0;
 }

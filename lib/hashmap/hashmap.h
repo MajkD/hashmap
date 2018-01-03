@@ -2,27 +2,19 @@
 
 #include <string>
 
-// TEST IMPL HASHMAP (WIP)
-
 #ifndef HASH_MAP_H
 #define HASH_MAP_H
 #endif
 
-class HashEntry
+struct HashEntry
 {
-  public:
     HashEntry(char* aKey, int aValue);
-    ~HashEntry();
+    ~HashEntry() {};
 
-    int getValue();
-    char* getKey();
-    void setKeyIndex(int aKeyIndex);
-    int getKeyIndex();
-
-  private:
     std::string myKey;
     int myValue;
-    int myKeyIndex;
+    int myHashedKey;
+    HashEntry* myNextItem;
 };
 
 class GrowingHashMap
@@ -32,18 +24,20 @@ class GrowingHashMap
     ~GrowingHashMap();
 
     void put(char* aKey, int aValue);
-
-    unsigned int hash(char* aKey);
+    int get(char* aKey);
 
     //Debug
+    unsigned int hash(char* aKey);
     void printEntries();
+    void printEntries(HashEntry** someEntries, int size);
     HashEntry** getEntries() { return myEntries; }
 
   private:
 
     void growByPowerOfTwo();
-    void insert(HashEntry* anEntry);
-    void insertCollided(HashEntry* anEntry, HashEntry* anExistingEntry);
+    void insert(HashEntry* aNewEntry);
+    void insertCollided(HashEntry* aNewEntry, HashEntry* anExistingEntry);
+    void rehash(HashEntry** oldEntries, int oldSize);
 
     // http://www.partow.net/programming/hashfunctions/
     unsigned int JSHash(const char* str, unsigned int length);
