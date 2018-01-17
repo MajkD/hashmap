@@ -19,6 +19,20 @@ void traceHandler(int sig)
   exit(1);
 }
 
+void gen_random_string(std::string& string, const int len)
+{
+    static const char alphanum[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+
+    for (int i = 0; i < len; ++i) {
+        string[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+    }
+
+    string[len] = 0;
+}
+
 void test_hash(std::string aString, GrowingHashMap* aHashMap)
 {
   printf("Hashing string: '%s' ----> value: '%u'\n", &aString[0], aHashMap->hash(&aString[0]));
@@ -121,6 +135,39 @@ void testMany() {
 
 void testGrowBig() {
 
+  GrowingHashMap* hashmap = new GrowingHashMap(2);
+
+  for(int index = 0; index < 1000000; index++) {
+    int randomValue = (rand() % 1000) + 1;
+    std::string key;
+    gen_random_string(key, 10);
+    hashmap->put(&key[0], randomValue);
+  }
+
+  printf("map size: %i\n", hashmap->getSize());
+  printf("map num entries: %i\n", hashmap->getNumEntries());
+  delete hashmap;
+}
+
+void testMemory() {
+
+  int count = 0;
+
+  while(true) {
+    GrowingHashMap* hashmap = new GrowingHashMap(2);
+
+    for(int index = 0; index < 1000000; index++) {
+      int randomValue = (rand() % 1000) + 1;
+      std::string key;
+      gen_random_string(key, 10);
+      hashmap->put(&key[0], randomValue);
+    }
+
+    delete hashmap;
+
+    printf("iteration: %i\n", count);
+    count++;
+  }
 }
 
 int main(void) 
@@ -130,12 +177,14 @@ int main(void)
   // testHashfunc();
   // testPut();
   // testMany();
-  testGet();
+  // testGet();
   // testGrowBig();
+  testMemory();
 
   // --- TODO ---
-  // Implement get & remove
+  // Implement remove
   // Determine when it whould grow
+  // 'Templatize' value
 
   return 0;
 }

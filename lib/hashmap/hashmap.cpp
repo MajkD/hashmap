@@ -70,7 +70,6 @@ int GrowingHashMap::get(char* aKey)
 void GrowingHashMap::insert(HashEntry* aNewEntry)
 {
   unsigned int hashedKey = hash(&aNewEntry->myKey[0]);
-  // printf("-- inserting Entry: %i with key: %i -- my size: %i \n",aNewEntry->myValue, hashedKey, mySize);
   if(myEntries[hashedKey] != NULL) {
     insertCollided(aNewEntry, myEntries[hashedKey]);
   } else {
@@ -82,7 +81,6 @@ void GrowingHashMap::insert(HashEntry* aNewEntry)
 
 void GrowingHashMap::insertCollided(HashEntry* aNewEntry, HashEntry* anExistingEntry)
 {
-  // printf("-- insertCollided -- \n");
   HashEntry* current = anExistingEntry;
   while(current->myNextItem != NULL) {
     current = current->myNextItem;
@@ -131,17 +129,19 @@ unsigned int GrowingHashMap::JSHash(const char* str, unsigned int length)
 void GrowingHashMap::growByPowerOfTwo()
 {
   // printf("growing...\n");
+
   int oldSize = mySize;
-  mySize = mySize * mySize;
+  mySize = mySize * 2;
 
   HashEntry** oldEntries = myEntries;
-  delete myEntries;
+  
   myEntries = new HashEntry*[mySize];
   for(int index = 0; index < mySize; index++) {
     myEntries[index] = NULL;
   }
   myNumEntries = 0;
   rehash(oldEntries, oldSize);
+  delete oldEntries;
 }
 
 void GrowingHashMap::rehash(HashEntry** oldEntries, int oldSize)

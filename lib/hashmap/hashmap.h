@@ -31,6 +31,8 @@ class GrowingHashMap
     void printEntries();
     void printEntries(HashEntry** someEntries, int size);
     HashEntry** getEntries() { return myEntries; }
+    int getSize() { return mySize; }
+    int getNumEntries() { return myNumEntries; }
 
   private:
 
